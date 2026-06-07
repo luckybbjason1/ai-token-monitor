@@ -35,7 +35,7 @@ def fmt_remain(remain):
 
 def load_keys():
     try:    return json.loads(KEY_FILE.read_text())
-    except: return {}
+    except Exception: return {}
 
 def save_cache(data):
     CACHE.parent.mkdir(exist_ok=True)
@@ -51,9 +51,10 @@ if key:
         r = requests.get('https://api.moonshot.cn/v1/users/me',
                          headers={'Authorization': f'Bearer {key}'}, timeout=8)
         if r.status_code == 200:
-            org    = r.json()['data']['organization']
+            data   = r.json()['data']
+            org    = data['organization']
             quota  = org.get('max_token_quota', 0)
-            used   = r.json()['data'].get('organization_usage', {}).get('total_tokens', 0)
+            used   = data.get('organization_usage', {}).get('total_tokens', 0)
             remain = max(0, quota - used)
             pct    = remain / quota if quota else 1.0
             cache['Kimi'] = {'ok': True, 'label': fmt_remain(remain), 'pct': pct}

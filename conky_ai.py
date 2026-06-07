@@ -20,7 +20,7 @@ def load(p):
     try:    return json.loads(Path(p).read_text())
     except Exception: return {}
 
-def next_midnight(_now):
+def next_midnight():
     from datetime import datetime, timedelta
     now_dt   = datetime.now()
     midnight = (now_dt + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -39,7 +39,7 @@ def bar(pct, width=9):
     if   pct > 0.5: c = '50FA7B'   # 绿
     elif pct > 0.2: c = 'FFB86C'   # 橙
     else:           c = 'FF5555'   # 红
-    b  = f'${{color {c}}}' + '█' * filled + '${color}'
+    b  = (f'${{color {c}}}' + '█' * filled + '${color}') if filled > 0 else ''
     b += ('${color 2A3550}' + '░' * empty + '${color}') if empty else ''
     return b
 
@@ -54,7 +54,7 @@ lines.append('${voffset 2}${color FFD700}AI TOKENS${color}')
 for svc in SERVICES:
     name = svc['name']
     st   = state.get(name, {})
-    rsec = st.get('reset_h', svc['reset_h']) * 3600
+    rsec = float(st.get('reset_h', svc['reset_h'])) * 3600
     lat  = st.get('limited_at', 0)
     rem  = max(0.0, (lat + rsec) - now) if lat else 0.0
     api  = cache.get(name, {})
@@ -83,14 +83,14 @@ for svc in SERVICES:
 
     elif api.get('ok'):
         # Key 有效但无配额数字 — 倒计时
-        daily   = next_midnight(now)
+        daily   = next_midnight()
         dot_c   = '50FA7B'
         val_str = f'${{color FF6644}}{fmt_cd(daily)}${{color}}'
         b       = bar(None)   # 无数据
 
     else:
         # 无 key
-        daily   = next_midnight(now)
+        daily   = next_midnight()
         dot_c   = '6A7A99'
         val_str = f'${{color 6A7A99}}{fmt_cd(daily)}${{color}}'
         b       = bar(None)

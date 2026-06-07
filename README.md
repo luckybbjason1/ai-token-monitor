@@ -6,7 +6,7 @@ A lightweight desktop widget that shows real-time token usage and reset countdow
   <img src="docs/screenshot.png" alt="AI Token Monitor showing Claude, Gemini, Grok, Kimi quota with HP-bar progress bars in Conky" width="285">
 </p>
 
-```
+```text
 ● Claude  ░░░░░░░░░  No balance
 ● Gemini  ░░░░░░░░░  Quota full
 ● Grok    ░░░░░░░░░  Depleted
@@ -25,8 +25,8 @@ A lightweight desktop widget that shows real-time token usage and reset countdow
 
 ## Supported Services
 
-| Service | API Detection | Quota %  | Notes |
-|---------|--------------|----------|-------|
+| Service | API Detection | Quota % | Notes |
+| ------- | ------------- | ------- | ----- |
 | Kimi (Moonshot) | ✅ | ✅ | `/v1/users/me` |
 | Grok (xAI) | ✅ | ❌ | 403 = credits exhausted |
 | Gemini | ✅ | ❌ | 429 = quota exceeded |
@@ -60,6 +60,7 @@ Then edit `~/.config/.ai_monitor_keys` and add your API keys:
 ```
 
 Finally restart Conky:
+
 ```bash
 pkill conky && conky --daemonize --pause=1
 ```
@@ -68,7 +69,7 @@ pkill conky && conky --daemonize --pause=1
 
 Add to your `conky.text` block:
 
-```
+```text
 ${execpi 30 python3 ~/token-monitor/conky_ai.py}
 ```
 
@@ -76,7 +77,7 @@ The fetcher runs as a background cron (every 5 min). The Conky block re-reads th
 
 ## Architecture
 
-```
+```text
 api_fetcher.py  (cron, every 5 min)
       │  writes
       ▼
@@ -104,9 +105,9 @@ If a service doesn't have an API detection, log it in `state.json`:
 ## Color Scheme
 
 | Color | Meaning |
-|-------|---------|
+| ----- | ------- |
 | `#50FA7B` green | Good — quota available |
-| `#FFB86C` orange | Warning — below 20% |
+| `#FFB86C` orange | Warning — 20–50% remaining |
 | `#FF5555` red | Depleted or rate limited |
 | `#6A7A99` gray | No API key configured |
 | `#2A3550` dark | Empty bar / no data |

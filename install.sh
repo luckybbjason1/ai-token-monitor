@@ -6,19 +6,18 @@ set -e
 INSTALL_DIR="$HOME/token-monitor"
 CONFIG_DIR="$HOME/.config"
 KEY_FILE="$CONFIG_DIR/.ai_monitor_keys"
-AUTOSTART="$HOME/.config/autostart/token-monitor.desktop"
 
 echo "=== AI Token Monitor Installer ==="
 
 # 1. Install dependencies
 echo "[1/5] Installing dependencies..."
 pip3 install -q requests --break-system-packages 2>/dev/null || pip3 install -q requests
-which conky > /dev/null || sudo apt-get install -y conky-all
+which conky > /dev/null || sudo apt-get install -y conky-all 2>/dev/null || echo "    → Could not auto-install Conky. Install manually: sudo apt-get install conky-all"
 
 # 2. Copy files
 echo "[2/5] Copying files..."
 mkdir -p "$INSTALL_DIR"
-cp conky_ai.py api_fetcher.py monitor.py "$INSTALL_DIR/"
+cp conky_ai.py api_fetcher.py "$INSTALL_DIR/"
 chmod +x "$INSTALL_DIR/"*.py
 
 # 3. API keys config
