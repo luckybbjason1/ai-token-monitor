@@ -62,7 +62,7 @@ fi
 
 # 5. Cron for API refresh
 echo "[5/5] Setting up cron (every 5 min)..."
-(crontab -l 2>/dev/null | grep -v "api_fetcher"; \
+(crontab -l 2>/dev/null | grep -v "api_fetcher" || true; \
  echo "*/5 * * * * python3 $INSTALL_DIR/api_fetcher.py > /dev/null 2>&1") | crontab -
 
 echo ""
