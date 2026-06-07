@@ -54,7 +54,7 @@ if key:
             org    = r.json()['data']['organization']
             quota  = org.get('max_token_quota', 0)
             used   = r.json()['data'].get('organization_usage', {}).get('total_tokens', 0)
-            remain = quota - used
+            remain = max(0, quota - used)
             pct    = remain / quota if quota else 1.0
             cache['Kimi'] = {'ok': True, 'label': fmt_remain(remain), 'pct': pct}
     except Exception:

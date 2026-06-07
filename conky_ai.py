@@ -20,9 +20,11 @@ def load(p):
     try:    return json.loads(Path(p).read_text())
     except Exception: return {}
 
-def next_midnight(now):
-    local = now + 8 * 3600
-    return (int(local) // 86400 + 1) * 86400 - local
+def next_midnight(_now):
+    from datetime import datetime, timedelta
+    now_dt   = datetime.now()
+    midnight = (now_dt + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return (midnight - now_dt).total_seconds()
 
 def fmt_cd(sec):
     h, m, s = int(sec//3600), int(sec%3600//60), int(sec%60)
@@ -67,7 +69,7 @@ for svc in SERVICES:
 
     elif api.get('ok') is False:
         # API 确认耗尽 / 无余额
-        lbl     = api.get('label', '耗尽')
+        lbl     = api.get('label', 'N/A')
         dot_c   = 'FF5555'
         val_str = f'${{color FF5555}}{lbl}${{color}}'
         b       = bar(0.0)
@@ -75,7 +77,7 @@ for svc in SERVICES:
     elif api.get('ok') and api.get('pct') is not None:
         # 有真实配额百分比（Kimi 充值后的 Claude 等）
         pct     = api['pct']
-        dot_c   = '50FA7B' if pct > 0.2 else 'FFB86C'
+        dot_c   = '50FA7B' if pct > 0.5 else ('FFB86C' if pct > 0.2 else 'FF5555')
         val_str = f'${{color 50FA7B}}{api["label"]}${{color}}'
         b       = bar(pct)
 

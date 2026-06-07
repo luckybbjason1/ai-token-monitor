@@ -46,8 +46,9 @@ if [ -f "$CONKY_CONF" ]; then
     if grep -q "conky_ai.py" "$CONKY_CONF"; then
         echo "    → Already integrated"
     else
-        # Add before the closing ]]
-        sed -i 's|\]\]|${execpi 30 python3 '"$INSTALL_DIR"'/conky_ai.py}\n]]|' "$CONKY_CONF"
+        # Insert before the LAST line that starts with ]]
+        last=$(grep -n '^\]\]' "$CONKY_CONF" | tail -1 | cut -d: -f1)
+        sed -i "${last}i\\\${execpi 30 python3 $INSTALL_DIR/conky_ai.py}" "$CONKY_CONF"
         echo "    → Added to existing conky.conf"
     fi
 else
