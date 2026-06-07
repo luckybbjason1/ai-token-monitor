@@ -1,11 +1,37 @@
 #!/usr/bin/env python3
 """Background API fetcher — run via cron every 5 min"""
 
-import json, requests, os, stat
+import json, requests, os, locale
 from pathlib import Path
 
 KEY_FILE = Path.home() / '.config' / '.ai_monitor_keys'
 CACHE    = Path.home() / 'token-monitor' / 'api_cache.json'
+
+# ── Language detection ────────────────────────────────────────
+def is_zh():
+    for var in ('LANG', 'LANGUAGE', 'LC_ALL', 'LC_MESSAGES'):
+        v = os.environ.get(var, '')
+        if v.lower().startswith('zh'):
+            return True
+    try:
+        loc = locale.getdefaultlocale()[0] or ''
+        return loc.lower().startswith('zh')
+    except Exception:
+        return False
+
+ZH = is_zh()
+
+def t(zh_text, en_text):
+    return zh_text if ZH else en_text
+
+def fmt_remain(remain):
+    suffix = t('剩', ' left')
+    if remain >= 1_000_000:
+        return f'{remain/1_000_000:.1f}M{suffix}'
+    elif remain >= 1000:
+        return f'{remain//1000}K{suffix}'
+    else:
+        return f'{remain}{suffix}'
 
 def load_keys():
     try:    return json.loads(KEY_FILE.read_text())
@@ -30,13 +56,7 @@ if key:
             used   = r.json()['data'].get('organization_usage', {}).get('total_tokens', 0)
             remain = quota - used
             pct    = remain / quota if quota else 1.0
-            if remain >= 1_000_000:
-                lbl = f'{remain/1_000_000:.1f}M剩'
-            elif remain >= 1000:
-                lbl = f'{remain//1000}K剩'
-            else:
-                lbl = f'{remain}剩'
-            cache['Kimi'] = {'ok': True, 'label': lbl, 'pct': pct}
+            cache['Kimi'] = {'ok': True, 'label': fmt_remain(remain), 'pct': pct}
     except Exception:
         pass
 
@@ -47,9 +67,9 @@ if key:
         r = requests.get('https://api.x.ai/v1/models',
                          headers={'Authorization': f'Bearer {key}'}, timeout=8)
         ok = r.status_code == 200
-        cache['Grok'] = {'ok': ok, 'label': 'OK' if ok else '耗尽'}
+        cache['Grok'] = {'ok': ok, 'label': 'OK' if ok else t('耗尽', 'Depleted')}
     except Exception:
-        cache['Grok'] = {'ok': False, 'label': '耗尽'}
+        cache['Grok'] = {'ok': False, 'label': t('耗尽', 'Depleted')}
 
 # ── Gemini ───────────────────────────────────────────────────
 key = keys.get('gemini')
@@ -63,15 +83,14 @@ if key:
         if r.status_code == 200:
             cache['Gemini'] = {'ok': True, 'label': 'Key✓'}
         elif r.status_code == 429:
-            cache['Gemini'] = {'ok': False, 'label': '配额用完'}
+            cache['Gemini'] = {'ok': False, 'label': t('配额用完', 'Quota full')}
         else:
-            cache['Gemini'] = {'ok': False, 'label': 'Key无效'}
+            cache['Gemini'] = {'ok': False, 'label': t('Key无效', 'Key invalid')}
     except Exception:
         pass
 
 # ── Claude ───────────────────────────────────────────────────
 key = keys.get('claude')
-org = keys.get('claude_org', '')
 if key:
     try:
         r = requests.post(
@@ -84,27 +103,20 @@ if key:
                   'messages': [{'role': 'user', 'content': 'hi'}]},
             timeout=10)
         if r.status_code == 200:
-            # 读 rate limit 剩余 tokens
             rem_tok = r.headers.get('anthropic-ratelimit-tokens-remaining', '')
             lim_tok = r.headers.get('anthropic-ratelimit-tokens-limit', '')
             if rem_tok and lim_tok:
                 rem, lim = int(rem_tok), int(lim_tok)
-                if rem >= 1_000_000:
-                    lbl = f'{rem/1_000_000:.1f}M剩'
-                elif rem >= 1000:
-                    lbl = f'{rem//1000}K剩'
-                else:
-                    lbl = f'{rem}剩'
-                cache['Claude'] = {'ok': True, 'label': lbl,
+                cache['Claude'] = {'ok': True, 'label': fmt_remain(rem),
                                    'pct': rem/lim if lim else 1.0}
             else:
                 cache['Claude'] = {'ok': True, 'label': 'Key✓'}
         elif r.status_code == 400 and 'credit' in r.text.lower():
-            cache['Claude'] = {'ok': False, 'label': '无余额'}
+            cache['Claude'] = {'ok': False, 'label': t('无余额', 'No balance')}
         elif r.status_code == 429:
-            cache['Claude'] = {'ok': False, 'label': '配额用完'}
+            cache['Claude'] = {'ok': False, 'label': t('配额用完', 'Quota full')}
         else:
-            cache['Claude'] = {'ok': False, 'label': 'Key无效'}
+            cache['Claude'] = {'ok': False, 'label': t('Key无效', 'Key invalid')}
     except Exception:
         pass
 
