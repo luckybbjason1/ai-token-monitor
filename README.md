@@ -2,6 +2,10 @@
 
 A lightweight desktop widget that shows real-time token usage and reset countdowns for multiple AI services — rendered inside [Conky](https://github.com/brndnmtthws/conky) on Linux.
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="AI Token Monitor showing Claude, Gemini, Grok, Kimi quota with HP-bar progress bars in Conky" width="285">
+</p>
+
 ```
 ● Claude  ░░░░░░░░░  无余额
 ● Gemini  ░░░░░░░░░  配额用完
