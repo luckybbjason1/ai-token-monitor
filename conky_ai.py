@@ -62,7 +62,7 @@ for svc in SERVICES:
     # ── 状态和百分比 ─────────────────────────────────────
     if rem > 0:
         # 手动记录的撞限倒计时
-        pct     = 1.0 - rem / rsec   # 恢复进度
+        pct     = (1.0 - rem / rsec) if rsec else 0.0   # 恢复进度
         dot_c   = 'FF5555'
         val_str = f'${{color FF5555}}{fmt_cd(rem)}${{color}}'
         b       = bar(pct)
@@ -78,7 +78,7 @@ for svc in SERVICES:
         # 有真实配额百分比（Kimi 充值后的 Claude 等）
         pct     = api['pct']
         dot_c   = '50FA7B' if pct > 0.5 else ('FFB86C' if pct > 0.2 else 'FF5555')
-        val_str = f'${{color 50FA7B}}{api["label"]}${{color}}'
+        val_str = f'${{color {dot_c}}}{api["label"]}${{color}}'
         b       = bar(pct)
 
     elif api.get('ok'):

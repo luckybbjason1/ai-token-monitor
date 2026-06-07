@@ -46,10 +46,15 @@ if [ -f "$CONKY_CONF" ]; then
     if grep -q "conky_ai.py" "$CONKY_CONF"; then
         echo "    → Already integrated"
     else
-        # Insert before the LAST line that starts with ]]
-        last=$(grep -n '^\]\]' "$CONKY_CONF" | tail -1 | cut -d: -f1)
-        sed -i "${last}i\\\${execpi 30 python3 $INSTALL_DIR/conky_ai.py}" "$CONKY_CONF"
-        echo "    → Added to existing conky.conf"
+        # Insert before the LAST line containing ]]
+        last=$(grep -n '\]\]' "$CONKY_CONF" 2>/dev/null | tail -1 | cut -d: -f1)
+        if [ -n "$last" ]; then
+            sed -i "${last}i\\\${execpi 30 python3 $INSTALL_DIR/conky_ai.py}" "$CONKY_CONF"
+            echo "    → Added to existing conky.conf"
+        else
+            echo "    → Could not find ]] in conky.conf — add this line manually before the closing ]]:"
+            echo "      \${execpi 30 python3 $INSTALL_DIR/conky_ai.py}"
+        fi
     fi
 else
     echo "    → No conky.conf found. Add this line manually to your conky.text:"

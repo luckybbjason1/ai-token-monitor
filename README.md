@@ -7,10 +7,10 @@ A lightweight desktop widget that shows real-time token usage and reset countdow
 </p>
 
 ```
-● Claude  ░░░░░░░░░  无余额
-● Gemini  ░░░░░░░░░  配额用完
-● Grok    ░░░░░░░░░  耗尽
-● Kimi    █████████  22.4M剩
+● Claude  ░░░░░░░░░  No balance
+● Gemini  ░░░░░░░░░  Quota full
+● Grok    ░░░░░░░░░  Depleted
+● Kimi    █████████  22.4M left
 ● Codex   ─────────  18:42:01
 ● Kilo    ─────────  18:42:01
 ```
@@ -19,7 +19,7 @@ A lightweight desktop widget that shows real-time token usage and reset countdow
 
 - **HP-bar style progress bars** — colored `█` blocks show quota remaining (green → orange → red)
 - **Real API data** — queries Kimi, Grok, Gemini, and Anthropic APIs for live status
-- **Reset countdown** — shows time until midnight UTC+8 for services without quota APIs
+- **Reset countdown** — shows time until local midnight for services without quota APIs
 - **Rate-limit logging** — manually record when you hit a limit; shows recovery countdown
 - **Secure key storage** — API keys stored in `~/.config/.ai_monitor_keys` (chmod 600), never logged
 
