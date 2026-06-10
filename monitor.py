@@ -16,7 +16,7 @@ except ImportError:
 
 STATE    = Path.home() / 'token-monitor' / 'state.json'
 KEY_FILE = Path.home() / '.config' / '.ai_monitor_keys'
-PIN_X, PIN_Y = 0, 32
+PIN_MARGIN_X, PIN_MARGIN_Y = 30, 60  # distance from bottom-right edge
 
 SERVICES = [
     {'name': 'Claude', 'color': '#E8885A', 'reset_h': 5  },
@@ -182,13 +182,21 @@ class App:
         r.title('AI Tokens')
         r.configure(bg=BG)
         r.overrideredirect(True)
-        r.attributes('-topmost', True)
         r.attributes('-alpha', 0.92)
         r.resizable(False, False)
-        r.geometry(f'+{PIN_X}+{PIN_Y}')
+
+    def _calc_pos(self):
+        r = self.root
+        r.update_idletasks()
+        sw = r.winfo_screenwidth()
+        ww = r.winfo_width()
+        x = sw - ww - PIN_MARGIN_X
+        y = PIN_MARGIN_Y
+        return x, y
 
     def _pin(self):
-        self.root.geometry(f'+{PIN_X}+{PIN_Y}')
+        x, y = self._calc_pos()
+        self.root.geometry(f'+{x}+{y}')
         self.root.lift()
         self.root.after(5000, self._pin)
 
@@ -226,7 +234,7 @@ class App:
                 w.bind('<Button-1>', lambda e, n=svc['name']: self._toggle(n))
                 w.bind('<Button-3>', lambda e, n=svc['name']: self._edit_hours(e, n))
 
-        self.root.after(5000, self._pin)
+        self.root.after(100, self._pin)
 
     # ── 手动撞限记录 ──────────────────────────────────────────
     def _toggle(self, name):
